@@ -79,22 +79,20 @@ func VerifyPegaHPAs(t *testing.T, yamlContent string, options *helm.Options) {
 		if index >= 0 && index <= 1 {
 			UnmarshalK8SYaml(t, hpaInfo, &pegaHpaObj)
 			if index == 0 {
-				VerifyPegaHpa(t, &pegaHpaObj, hpa{"pega-web-hpa", "pega-web", "Deployment", "apps/v1"}, true, true)
+				VerifyPegaHpa(t, &pegaHpaObj, hpa{"pega-web-hpa", "pega-web", "Deployment", "apps/v1"}, true)
 			} else {
-				VerifyPegaHpa(t, &pegaHpaObj, hpa{"pega-batch-hpa", "pega-batch", "Deployment", "apps/v1"}, true, false)
+				VerifyPegaHpa(t, &pegaHpaObj, hpa{"pega-batch-hpa", "pega-batch", "Deployment", "apps/v1"}, false)
 			}
 		}
 	}
 }
 
 // VerifyPegaHpa - Performs Pega HPA assertions with the values as provided in default values.yaml
-func VerifyPegaHpa(t *testing.T, hpaObj *autoscaling.HorizontalPodAutoscaler, expectedHpa hpa, shouldHaveCpuTarget bool, shouldHaveMemoryTarget bool) {
+func VerifyPegaHpa(t *testing.T, hpaObj *autoscaling.HorizontalPodAutoscaler, expectedHpa hpa, shouldHaveMemoryTarget bool) {
 	require.Equal(t, hpaObj.Spec.ScaleTargetRef.Name, expectedHpa.targetRefName)
 	require.Equal(t, hpaObj.Spec.ScaleTargetRef.Kind, expectedHpa.kind)
 	require.Equal(t, hpaObj.Spec.ScaleTargetRef.APIVersion, expectedHpa.apiversion)
-	if shouldHaveCpuTarget {
-		require.Equal(t, hpaObj.Spec.Metrics[0].Resource.Name, api.ResourceName("cpu"))
-	}
+	require.Equal(t, hpaObj.Spec.Metrics[0].Resource.Name, api.ResourceName("cpu"))
 	if shouldHaveMemoryTarget {
 		require.Equal(t, hpaObj.Spec.Metrics[1].Resource.Name, api.ResourceName("memory"))
 	}
